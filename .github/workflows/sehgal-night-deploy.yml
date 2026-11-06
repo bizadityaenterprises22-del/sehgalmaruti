@@ -1,0 +1,123 @@
+name: Sehgal Nightly Production Cutover
+
+on:
+  schedule:
+    # 17:00 UTC = 10:30 PM IST every night
+    - cron: '0 17 * * *'
+  workflow_dispatch: # Allows manual 1-click trigger from GitHub mobile or web
+
+concurrency:
+  group: sehgal-production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  verify-build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Clean Aditya Enterprises Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DEPLOY_TOKEN || github.token }}
+
+      - name: Setup Node.js & pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            app-source/pnpm-lock.yaml
+            software/W2 Portal/02 Sehgal Maruti App/app/pnpm-lock.yaml
+
+      - name: Step 1 - Hard Pre-Build Gate (Zero AVNI / Tenant Leak Check)
+        run: |
+          if [ -d "app-source" ]; then
+            APP_DIR="app-source"
+          else
+            APP_DIR="software/W2 Portal/02 Sehgal Maruti App/app"
+          fi
+          echo "Running strict case-insensitive scan on source tree ($APP_DIR)..."
+          if grep -riE "avni|tenant0|tenant1" "$APP_DIR/src" "$APP_DIR/public" "$APP_DIR/index.html" "$APP_DIR/package.json" 2>/dev/null; then
+            echo "::error::FATAL: Found forbidden brand or tenant string in source code. Aborting deployment."
+            exit 1
+          fi
+          echo "Source tree verified 100% clean."
+
+      - name: Install Dependencies & Build Production Bundle
+        env:
+          VITE_BRAND_MODE: sehgal
+          VITE_APP_TITLE: "Sehgal Autoriders"
+          VITE_DEVELOPER_CREDIT: "Aditya Enterprises"
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          GENERATE_SOURCEMAP: "false"
+        run: |
+          if [ -d "app-source" ]; then
+            APP_DIR="app-source"
+          else
+            APP_DIR="software/W2 Portal/02 Sehgal Maruti App/app"
+          fi
+          cd "$APP_DIR"
+          pnpm install --frozen-lockfile
+          pnpm exec tsc --noEmit
+          pnpm exec vite build --base=/sehgalmaruti/app/
+
+      - name: Step 2 - Hard Post-Build Gate (Verify Compiled Dist & Zero Source Maps)
+        run: |
+          if [ -d "app-source" ]; then
+            APP_DIR="app-source"
+          else
+            APP_DIR="software/W2 Portal/02 Sehgal Maruti App/app"
+          fi
+          echo "Scanning compiled dist bundle for any leaked strings..."
+          if grep -riE "avni|tenant0|tenant1" "$APP_DIR/dist"; then
+            echo "::error::FATAL: Leaked string detected in compiled dist bundle. Aborting deployment."
+            exit 1
+          fi
+          echo "Verifying no .map source map files exist in production dist..."
+          MAP_COUNT=$(find "$APP_DIR/dist" -name "*.map" | wc -l)
+          if [ "$MAP_COUNT" -gt 0 ]; then
+            echo "::error::FATAL: Source maps found in dist. Set sourcemap: false in vite.config."
+            exit 1
+          fi
+          echo "Compiled dist bundle verified 100% clean."
+
+      - name: Step 3 - Deploy Clean Build to Live Production Hosting
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || github.token }}
+        run: |
+          if [ -d "app-source" ]; then
+            APP_DIR="app-source"
+          else
+            APP_DIR="software/W2 Portal/02 Sehgal Maruti App/app"
+          fi
+          git config --global user.name "Aditya Enterprises CI"
+          git config --global user.email "biz.adityaenterprises22@gmail.com"
+
+          if [ -d "app" ] && [ -d "app-source" ]; then
+            # Inside sehgalmaruti hosting repository: cut over /app and /404.html directly on main
+            rm -rf app
+            mkdir -p app
+            cp -R "$APP_DIR/dist/"* app/
+            cp "$APP_DIR/dist/index.html" 404.html
+            touch .nojekyll
+            git add app 404.html .nojekyll
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(release): nightly production cutover (Sehgal Autoriders · Aditya Enterprises)"
+              git push origin HEAD:main
+            else
+              echo "Live /app already matches clean dist build."
+            fi
+          fi
