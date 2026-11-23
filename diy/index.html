@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sehgal Autoriders Manjari (19NE-01) — DIY Vehicle Service &amp; Job Card Checklist</title>
+  <meta property="og:title" content="Sehgal Autoriders Manjari (19NE-01) — Update Your Vehicle Issues (DIY Job Card)" />
+  <meta property="og:description" content="Select your vehicle service &amp; repair points directly for your Job Card, view your Service Advisor &amp; Escalation Matrix, and open Google Maps directions." />
+  <meta property="og:image" content="https://maruti.sehgalautoriders.com/app/icon.svg" />
+  <meta name="theme-color" content="#0b1f3a" />
+  <link rel="icon" href="../app/icon.svg" />
+  <style>
+    :root {
+      --primary: #0b1f3a;
+      --accent: #0f766e;
+      --blue: #1769e0;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --ok: #15803d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: linear-gradient(180deg, #0b1f3a 0%, #1e3a8a 200px, var(--bg) 200px); color: var(--text); min-height: 100vh; padding: 14px; }
+    .shell { width: 100%; max-width: 560px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14); overflow: hidden; }
+    .hdr { background: var(--primary); color: #fff; padding: 18px 16px; display: flex; align-items: center; gap: 12px; }
+    .hdr img { width: 44px; height: 44px; border-radius: 10px; background: #fff; padding: 5px; flex-shrink: 0; }
+    .hdr .brand { flex: 1; }
+    .hdr h1 { font-size: 16.5px; font-weight: 800; letter-spacing: 0.3px; }
+    .hdr p { font-size: 12px; color: #cbd5e1; margin-top: 2px; font-weight: 600; }
+    .subbar { background: #ecfdf5; border-bottom: 1px solid #a7f3d0; color: #065f46; padding: 10px 14px; font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.45; }
+    .body { padding: 16px; }
+    .sec-title { font-size: 11.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; }
+    .sec-title:first-child { margin-top: 0; }
+    .info-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .lbl { color: var(--muted); font-weight: 600; }
+    .val { color: var(--primary); font-weight: 800; text-align: right; }
+    .chk-list { display: flex; flex-direction: column; gap: 8px; }
+    .chk-item { display: flex; align-items: flex-start; gap: 10px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 11px 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .chk-item input { margin-top: 2px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+    textarea, select, input[type="text"] { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; color: var(--text); background: #fff; }
+    textarea { min-height: 82px; resize: vertical; }
+    .btn-submit { width: 100%; margin-top: 16px; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(15, 118, 110, 0.25); }
+    .btn-submit:disabled { opacity: 0.7; cursor: wait; }
+    .btn-map { display: block; width: 100%; margin-top: 12px; background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; border-radius: 12px; padding: 12px 14px; font-size: 13.5px; font-weight: 800; text-align: center; text-decoration: none; }
+    .btn-app { display: block; width: 100%; margin-top: 10px; background: #f8fafc; color: var(--primary); border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 14px; font-size: 13px; font-weight: 800; text-align: center; text-decoration: none; }
+    .esc-card { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 13px 14px; font-size: 12.5px; line-height: 1.65; color: #78350f; }
+    .done-box { display: none; background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; padding: 15px; margin-bottom: 14px; }
+    .done-box h2 { color: var(--ok); font-size: 16px; margin-bottom: 6px; }
+    .done-box p { font-size: 13px; color: #166534; line-height: 1.5; }
+    .err-box { display: none; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 12px; margin-bottom: 14px; color: #991b1b; font-size: 13px; font-weight: 600; }
+    .ftr { background: #f8fafc; border-top: 1px solid var(--border); padding: 13px 16px; text-align: center; font-size: 11.5px; color: var(--muted); }
+    .ftr a { color: var(--primary); font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hdr">
+      <img src="../app/brand/sehgal-autoriders-logo.svg" alt="Sehgal Autoriders" onerror="this.style.display='none'" />
+      <div class="brand">
+        <h1>SEHGAL AUTORIDERS PVT. LTD.</h1>
+        <p>Sehgal Nexa Manjari Workshop (19NE-01) · DIY Job Card Checklist</p>
+      </div>
+    </div>
+    <div class="subbar">
+      🛠️ Update Your Vehicle Service &amp; Repair Points Directly on Your Job Card — Connected with Your Service Advisor, WM, CCM &amp; GM
+    </div>
+    <div class="body">
+      <div id="doneBox" class="done-box">
+        <h2>✅ DIY Job Card Checklist Saved!</h2>
+        <p id="doneText">Your requested service and repair points have been recorded for your Job Card and shared with your Service Advisor and Workshop Support Team.</p>
+      </div>
+      <div id="errBox" class="err-box"></div>
+
+      <div class="sec-title">1. Vehicle &amp; Reference Details</div>
+      <div class="info-card">
+        <div class="row"><span class="lbl">Reference / Appointment / JC:</span><span class="val" id="vAppt">—</span></div>
+        <div class="row"><span class="lbl">Scheduled Date:</span><span class="val" id="vDate">—</span></div>
+        <div class="row"><span class="lbl">Vehicle Registration:</span><span class="val" id="vReg">—</span></div>
+        <div class="row"><span class="lbl">Vehicle Model &amp; Service:</span><span class="val" id="vModel">MARUTI SUZUKI</span></div>
+        <div class="row"><span class="lbl">Allocated Service Advisor:</span><span class="val" id="vSa">Anand Prakash Maralbhavi (+91 90750 97343)</span></div>
+      </div>
+
+      <form id="diyForm" onsubmit="submitDiy(event)">
+        <div id="regInputWrap" style="display:none;margin-top:12px;">
+          <div class="sec-title">Enter Vehicle Registration Number</div>
+          <input type="text" id="manualReg" placeholder="e.g. MH12AB1234" />
+        </div>
+
+        <div class="sec-title">2. Select Issues / Demanded Repairs (DIY Job Card Points)</div>
+        <div class="chk-list">
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="Periodic Maintenance Service (Engine Oil, Oil Filter, Coolant & 42-Point Check)" checked /> <span>1. Periodic Maintenance Service (Engine Oil, Filters, Coolant &amp; 42-Point Check)</span></label>
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="Brakes, Pad/Liner Thickness Check, Pedal Feel or Braking Noise" /> <span>2. Brakes, Pad/Liner Thickness Check, Pedal Feel or Braking Noise</span></label>
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="Engine Performance, Mileage, Pickup, Vibration or Dashboard Warning" /> <span>3. Engine Performance, Mileage, Pickup, Vibration or Dashboard Warning</span></label>
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="AC Cooling, Cabin Filter, Battery Load Test, Wipers or Electricals" /> <span>4. AC Cooling, Cabin Filter, Battery Load Test, Wipers or Electricals</span></label>
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="Suspension, Steering, Wheel Alignment & Wheel Balancing" /> <span>5. Suspension, Steering, Wheel Alignment &amp; Wheel Balancing</span></label>
+          <label class="chk-item"><input type="checkbox" name="diy_issue" value="Body Scratches, Denting/Painting, Interior Cleaning & Washing Priority" /> <span>6. Body Scratches, Denting/Painting, Interior Cleaning &amp; Washing Priority</span></label>
+        </div>
+
+        <div class="sec-title">3. Specific Notes / Sounds / Instructions for Technician</div>
+        <textarea id="customNotes" placeholder="Type any specific sound, issue, or instruction you want recorded on your Job Card..."></textarea>
+
+        <div class="sec-title">4. Preferred Arrival Time / Free Doorstep Pickup</div>
+        <select id="prefSlot">
+          <option value="09:30 AM - Direct Arrival at Manjari Workshop">09:30 AM — Direct Arrival at Manjari Workshop</option>
+          <option value="10:30 AM - Direct Arrival at Manjari Workshop">10:30 AM — Direct Arrival at Manjari Workshop</option>
+          <option value="11:30 AM - Direct Arrival at Manjari Workshop">11:30 AM — Direct Arrival at Manjari Workshop</option>
+          <option value="02:30 PM - Direct Arrival at Manjari Workshop">02:30 PM — Direct Arrival at Manjari Workshop</option>
+          <option value="Free Doorstep Pickup & Drop Requested">Free Doorstep Pickup &amp; Drop Requested</option>
+        </select>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">✅ Submit DIY Checklist to Workshop Job Card</button>
+      </form>
+
+      <div class="sec-title">5. Exact Workshop Location &amp; 4-Level Escalation Matrix</div>
+      <div class="esc-card">
+        <strong>📍 Sehgal Nexa Manjari Workshop (19NE-01)</strong><br/>
+        S.No. 63, H.No. 2/3A/4, Opposite Shewalewadi PMT Bus Depot (500m before old Acekudale site), Pune-Solapur Road, Manjari Budruk, Pune – 412307<br/><br/>
+        <strong>📞 Customer Support &amp; Escalation Matrix:</strong><br/>
+        • <strong>Level 1 — Service Advisor:</strong> <span id="escSa">Anand Prakash Maralbhavi (+91 90750 97343)</span><br/>
+        • <strong>Level 2 — Workshop Manager:</strong> Ganesh Raut (+91 87999 57088)<br/>
+        • <strong>Level 3 — Customer Care Manager:</strong> Gauri Amit Banpel (+91 78880 03815)<br/>
+        • <strong>Level 4 — General Manager:</strong> Mahesh Vijay Phutane (+91 88888 81365)
+      </div>
+      <a class="btn-map" id="mapBtn" href="https://www.google.com/maps/dir/?api=1&destination=18.496482,73.972321&travelmode=driving" target="_blank" rel="noopener">
+        🗺️ Open Exact Google Maps Directions (Opp. Shewalewadi PMT Depot, Pune-Solapur Rd)
+      </a>
+      <a class="btn-app" href="https://maruti.sehgalautoriders.com/maruti-app/" target="_blank" rel="noopener">
+        📲 Download Maruti Suzuki App (iOS · Android · Windows)
+      </a>
+    </div>
+    <div class="ftr">
+      Sehgal Autoriders Pvt. Ltd. · Authorized Maruti Suzuki Arena &amp; NEXA Service · Helpline: <a href="tel:+917888003815">+91 78880 03815</a>
+    </div>
+  </div>
+
+  <script>
+    const INTAKE_API = "https://tiwfuwfzjxcsbrifcdpu.supabase.co/functions/v1/manjri-diy-intake";
+    const params = new URLSearchParams(window.location.search);
+    let appt = (params.get("appt") || params.get("jc") || "").trim().toUpperCase();
+    let reg = (params.get("reg") || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const dateParam = (params.get("date") || "").trim();
+    const modelParam = (params.get("model") || "").trim();
+    const saParam = (params.get("sa") || "").trim();
+
+    function fmtPhone(p) {
+      const d = String(p || "").replace(/\D+/g, "").slice(-10);
+      return d.length === 10 ? "+91 " + d.slice(0, 5) + " " + d.slice(5) : "";
+    }
+
+    function applyDetails(info) {
+      document.getElementById("vAppt").textContent = info.appt_no || appt || "Walk-In / Direct Service";
+      document.getElementById("vDate").textContent = info.booking_date || dateParam || new Date().toLocaleDateString("en-GB");
+      document.getElementById("vReg").textContent = info.reg_no || reg || "Enter Below";
+      const mdl = info.vehicle_model || modelParam || "MARUTI SUZUKI";
+      const stp = info.service_type ? " (" + info.service_type + ")" : "";
+      document.getElementById("vModel").textContent = mdl + stp;
+      if (info.allocated_sa_name) {
+        const ph = fmtPhone(info.allocated_sa_mobile);
+        const saDisp = info.allocated_sa_name + (ph ? " (" + ph + ")" : "");
+        document.getElementById("vSa").textContent = saDisp;
+        document.getElementById("escSa").textContent = saDisp;
+      } else if (saParam) {
+        document.getElementById("vSa").textContent = saParam;
+        document.getElementById("escSa").textContent = saParam;
+      }
+      if (info.workshop_map_url) {
+        document.getElementById("mapBtn").href = info.workshop_map_url;
+      }
+      if (info.diy_issues_summary && info.diy_updated) {
+        document.getElementById("customNotes").placeholder = "Previously recorded: " + info.diy_issues_summary;
+      }
+    }
+
+    applyDetails({});
+    if (!reg && !appt) {
+      document.getElementById("regInputWrap").style.display = "block";
+    } else {
+      const qs = new URLSearchParams({ format: "json" });
+      if (appt) qs.set("appt", appt);
+      if (reg) qs.set("reg", reg);
+      fetch(INTAKE_API + "?" + qs.toString(), { headers: { "Accept": "application/json" } })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.appointment) {
+            appt = data.appointment.appt_no || appt;
+            reg = data.appointment.reg_norm || data.appointment.reg_no || reg;
+            applyDetails(data.appointment);
+          }
+        })
+        .catch(() => {});
+    }
+
+    async function submitDiy(ev) {
+      ev.preventDefault();
+      const errEl = document.getElementById("errBox");
+      errEl.style.display = "none";
+      const manualRegVal = (document.getElementById("manualReg").value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const finalReg = reg || manualRegVal;
+      if (!appt && !finalReg) {
+        errEl.textContent = "Please enter your Vehicle Registration Number (e.g. MH12AB1234).";
+        errEl.style.display = "block";
+        return;
+      }
+      const btn = document.getElementById("btnSubmit");
+      btn.disabled = true;
+      btn.textContent = "⏳ Saving DIY Checklist to Workshop Job Card...";
+      const checked = Array.from(document.querySelectorAll('input[name="diy_issue"]:checked')).map(i => i.value);
+      const notes = document.getElementById("customNotes").value.trim();
+      const slot = document.getElementById("prefSlot").value;
+      const parts = checked.slice();
+      if (notes) parts.push("Customer Note: " + notes);
+      const summary = (parts.join(" | ") || "Periodic Maintenance & General Checkup") + " [" + slot + "]";
+
+      try {
+        const res = await fetch(INTAKE_API + "?format=json", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            appt_no: appt,
+            reg_no: finalReg,
+            diy_issues_summary: summary,
+            preferred_arrival_slot: slot
+          })
+        });
+        const out = await res.json();
+        if (!res.ok || !out.ok) {
+          throw new Error((out && out.error) || "Unable to save right now. Please share directly in your WhatsApp group.");
+        }
+        reg = finalReg || out.reg_no || reg;
+        appt = out.appt_no || appt;
+        const saObj = out.allocated_service_advisor || {};
+        const saStr = saObj.name ? saObj.name + (saObj.mobile ? " (" + fmtPhone(saObj.mobile) + ")" : "") : document.getElementById("vSa").textContent;
+        document.getElementById("vReg").textContent = reg;
+        document.getElementById("vAppt").textContent = appt;
+        document.getElementById("doneBox").style.display = "block";
+        document.getElementById("doneText").textContent =
+          "DIY Checklist saved for " + reg + (appt ? " (" + appt + ")" : "") + ": " + summary +
+          ". Allocated Service Advisor: " + saStr +
+          " | WM Ganesh Raut (+91 87999 57088) | CCM Gauri Amit Banpel (+91 78880 03815) | GM Mahesh Vijay Phutane (+91 88888 81365).";
+        btn.textContent = "✅ DIY Updated & Saved";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "✅ Submit DIY Checklist to Workshop Job Card";
+        errEl.textContent = e.message || "Network error while saving DIY checklist. Please try again.";
+        errEl.style.display = "block";
+      }
+    }
+  </script>
+</body>
+</html>
